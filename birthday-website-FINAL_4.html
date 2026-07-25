@@ -1,0 +1,2557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>For You</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Outfit:wght@300;400;500;600&display=swap');
+
+:root{
+  /* ---- palette: warm dial / ember tones ---- */
+  --maroon-950:#210709;
+  --maroon-900:#33090c;
+  --maroon-800:#521015;
+  --ember-700:#7a1c17;
+  --ember-500:#b23a20;
+  --ember-400:#d9552c;
+  --gold-300:#f4c98a;
+  --gold-200:#ffdfb0;
+  --cream-100:#fff4e8;
+  --error-500:#ff6b5e;
+
+  --font-display:'Fraunces', serif;
+  --font-body:'Outfit', sans-serif;
+
+  --ease-soft: cubic-bezier(.22,.9,.36,1);
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+
+html,body{
+  height:100%;
+  margin:0;
+  padding:0;
+}
+
+body{
+  font-family:var(--font-body);
+  color:var(--cream-100);
+  background:var(--maroon-950);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+.phase{
+  position:fixed;
+  inset:0;
+  display:none;
+}
+.phase.active{
+  display:flex;
+}
+
+button{
+  font-family:inherit;
+  cursor:pointer;
+  border:none;
+  background:none;
+  color:inherit;
+}
+
+a{ color:inherit; }
+
+::selection{
+  background:var(--ember-400);
+  color:var(--cream-100);
+}
+
+/* subtle shared grain overlay for a hand-made, non-flat feel */
+.grain{
+  pointer-events:none;
+  position:absolute;
+  inset:0;
+  opacity:.05;
+  mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+#phase-login{
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(120% 90% at 50% -10%, #6e1c19 0%, transparent 60%),
+    linear-gradient(180deg, var(--maroon-900) 0%, var(--maroon-950) 55%, #170405 100%);
+}
+
+.login-wrap{
+  position:relative;
+  z-index:2;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  width:min(92vw, 380px);
+  padding:32px 0 48px;
+  animation:riseIn .9s var(--ease-soft) both;
+}
+
+@keyframes riseIn{
+  from{ opacity:0; transform:translateY(18px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+
+/* ---- hand-drawn ring behind the lock mark ---- */
+.dial-mark{
+  position:relative;
+  width:88px;
+  height:88px;
+  margin-bottom:22px;
+}
+.dial-mark svg{ width:100%; height:100%; }
+.dial-mark .ring{
+  fill:none;
+  stroke:var(--gold-300);
+  stroke-width:1.4;
+  opacity:.55;
+  stroke-linecap:round;
+}
+.dial-mark .pin{
+  fill:var(--gold-200);
+}
+
+.login-eyebrow{
+  font-size:12.5px;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--gold-300);
+  opacity:.75;
+  margin:0 0 8px;
+}
+
+.login-title{
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:26px;
+  margin:0 0 6px;
+  text-align:center;
+  color:var(--cream-100);
+}
+.login-title em{
+  font-style:italic;
+  font-weight:500;
+  color:var(--gold-200);
+}
+
+.login-hint{
+  font-size:13px;
+  color:var(--gold-300);
+  opacity:.6;
+  margin:0 0 26px;
+  text-align:center;
+}
+
+/* ---- progress dots ---- */
+.code-dots{
+  display:flex;
+  gap:10px;
+  margin-bottom:34px;
+}
+.code-dots .dot{
+  width:11px;
+  height:11px;
+  border-radius:50%;
+  border:1.4px solid var(--gold-300);
+  background:transparent;
+  transition:background .25s var(--ease-soft), transform .25s var(--ease-soft), border-color .25s;
+}
+.code-dots .dot.filled{
+  background:var(--gold-200);
+  border-color:var(--gold-200);
+  transform:scale(1.1);
+}
+.code-dots.shake{
+  animation:shakeRow .42s;
+}
+.code-dots.shake .dot{
+  border-color:var(--error-500);
+  background:var(--error-500);
+}
+@keyframes shakeRow{
+  0%,100%{ transform:translateX(0); }
+  20%{ transform:translateX(-8px); }
+  40%{ transform:translateX(7px); }
+  60%{ transform:translateX(-5px); }
+  80%{ transform:translateX(3px); }
+}
+
+/* ---- keypad ---- */
+.keypad{
+  display:grid;
+  grid-template-columns:repeat(3, 72px);
+  gap:16px 20px;
+  justify-content:center;
+}
+
+.key{
+  position:relative;
+  width:72px;
+  height:72px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:var(--font-display);
+  font-size:22px;
+  font-weight:500;
+  color:var(--cream-100);
+  background:
+    radial-gradient(120% 120% at 30% 25%, rgba(255,223,176,.14), rgba(255,223,176,0) 55%),
+    linear-gradient(160deg, rgba(255,255,255,.06), rgba(255,255,255,.015));
+  border:1px solid rgba(244,201,138,.22);
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.08),
+    0 6px 14px rgba(0,0,0,.35);
+  transition:transform .15s var(--ease-soft), background .15s, box-shadow .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.key:hover{
+  border-color:rgba(244,201,138,.4);
+}
+.key:active,
+.key.pressed{
+  transform:scale(.92);
+  background:
+    radial-gradient(120% 120% at 30% 25%, rgba(255,223,176,.22), rgba(255,223,176,0) 55%),
+    linear-gradient(160deg, rgba(255,255,255,.1), rgba(255,255,255,.02));
+  box-shadow:
+    inset 0 2px 6px rgba(0,0,0,.35),
+    0 2px 6px rgba(0,0,0,.3);
+}
+
+.key.key-empty{
+  background:none;
+  border:none;
+  box-shadow:none;
+  pointer-events:none;
+}
+
+.key.key-back{
+  font-size:19px;
+  color:var(--gold-300);
+}
+.key.key-back svg{
+  width:22px;
+  height:22px;
+}
+
+/* subtle concentric dial rings behind the whole pad, decorative */
+.dial-rings{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+  z-index:0;
+}
+.dial-rings svg{
+  width:min(150vw, 900px);
+  height:min(150vw, 900px);
+  opacity:.06;
+}
+
+.login-error{
+  min-height:18px;
+  margin-top:18px;
+  font-size:12.5px;
+  color:var(--error-500);
+  opacity:0;
+  transition:opacity .25s;
+  text-align:center;
+}
+.login-error.show{ opacity:1; }
+#phase-loading{
+  align-items:center;
+  justify-content:center;
+  background:#050202;
+}
+
+.loading-wrap{
+  position:relative;
+  z-index:2;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:22px;
+}
+
+/* faint red glow breathing behind the number, like a coal */
+.loading-glow{
+  position:absolute;
+  width:340px;
+  height:340px;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(circle, rgba(178,32,20,.35) 0%, rgba(178,32,20,0) 70%);
+  filter:blur(4px);
+  animation:glowBreathe 1s ease-in-out infinite;
+  pointer-events:none;
+  z-index:0;
+}
+@keyframes glowBreathe{
+  0%,100%{ opacity:.55; transform:translate(-50%,-50%) scale(.94); }
+  50%{ opacity:1; transform:translate(-50%,-50%) scale(1.04); }
+}
+
+.loading-number{
+  position:relative;
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:clamp(90px, 26vw, 168px);
+  line-height:1;
+  color:#c81e1e;
+  text-shadow:
+    0 0 18px rgba(200,30,30,.55),
+    0 0 46px rgba(200,30,30,.25);
+  -webkit-font-smoothing:antialiased;
+}
+
+.loading-number.tick{
+  animation:tickPulse .62s var(--ease-soft);
+}
+@keyframes tickPulse{
+  0%{ opacity:0; transform:scale(.82); filter:blur(2px); }
+  35%{ opacity:1; transform:scale(1.06); filter:blur(0); }
+  100%{ opacity:1; transform:scale(1); }
+}
+
+.loading-caption{
+  position:relative;
+  font-family:var(--font-body);
+  font-weight:300;
+  font-size:13px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:#7a2b23;
+  opacity:.8;
+}
+
+.loading-dots{
+  position:relative;
+  display:inline-flex;
+  gap:5px;
+  margin-left:2px;
+}
+.loading-dots span{
+  width:3px;
+  height:3px;
+  border-radius:50%;
+  background:#7a2b23;
+  opacity:.4;
+  animation:dotBlink 1.4s ease-in-out infinite;
+}
+.loading-dots span:nth-child(2){ animation-delay:.2s; }
+.loading-dots span:nth-child(3){ animation-delay:.4s; }
+@keyframes dotBlink{
+  0%,80%,100%{ opacity:.25; }
+  40%{ opacity:.9; }
+}
+
+/* scattered faint embers drifting upward, sparse and slow */
+.ember-field{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+  z-index:1;
+}
+.ember{
+  position:absolute;
+  bottom:-10px;
+  width:2px;
+  height:2px;
+  border-radius:50%;
+  background:#c81e1e;
+  opacity:0;
+  box-shadow:0 0 6px 1px rgba(200,30,30,.6);
+  animation:emberRise linear infinite;
+}
+@keyframes emberRise{
+  0%{ opacity:0; transform:translateY(0) translateX(0); }
+  10%{ opacity:.7; }
+  90%{ opacity:.3; }
+  100%{ opacity:0; transform:translateY(-100vh) translateX(var(--drift, 20px)); }
+}
+#phase-levels{
+  align-items:stretch;
+  justify-content:center;
+  background-color:#000000;
+  background-image:
+    linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,.8) 100%),
+    url("background.webp");
+  background-position:center;
+  background-size:cover;
+  background-repeat:no-repeat;
+  overflow:hidden;
+}
+#phase-levels::before{
+  display:none;
+}
+
+/* ---------- layered living scenery ---------- */
+.levels-scenery{
+  display:none;
+}
+.levels-scenery svg{
+  position:absolute;
+  left:0;
+  width:100%;
+  height:auto;
+}
+
+.scenery-sun-disc{
+  position:absolute;
+  top:9%;
+  left:50%;
+  width:64px;
+  height:64px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:radial-gradient(circle at 38% 32%, #fff8e8, #ffdca0 55%, #ffb877 100%);
+  box-shadow:0 0 40px 14px rgba(255,200,140,.4);
+}
+
+.scenery-sun{
+  position:absolute;
+  top:6%;
+  left:50%;
+  width:140px;
+  height:140px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(255,224,170,.9) 0%, rgba(255,190,130,.35) 45%, rgba(255,190,130,0) 72%);
+  filter:blur(2px);
+  animation:sunPulse 6s ease-in-out infinite;
+}
+@keyframes sunPulse{
+  0%,100%{ opacity:.75; transform:translateX(-50%) scale(1); }
+  50%{ opacity:1; transform:translateX(-50%) scale(1.06); }
+}
+
+/* clouds drift horizontally forever */
+.scenery-clouds{
+  bottom:auto; top:6%; opacity:1; width:220%;
+  animation:cloudDrift 90s linear infinite, cloudBillow 14s ease-in-out infinite;
+  transform-origin:center;
+}
+.scenery-clouds.far{
+  top:2%; opacity:.75; width:240%; filter:blur(1.5px);
+  animation:cloudDrift 150s linear infinite, cloudBillow 20s ease-in-out infinite reverse;
+}
+@keyframes cloudDrift{
+  from{ transform:translateX(0) scale(1); }
+  to{ transform:translateX(-50%) scale(1); }
+}
+@keyframes cloudBillow{
+  0%,100%{ transform:scaleY(1) scaleX(1); }
+  50%{ transform:scaleY(1.015) scaleX(.995); }
+}
+
+/* atmospheric perspective: farther layers are softer/hazier, like real depth of field */
+.scenery-mountains-back{ bottom:32%; opacity:.85; filter:blur(1px) saturate(.95); }
+.scenery-mountains{ bottom:20%; opacity:1; filter:blur(.2px); }
+.scenery-hills{ bottom:0; opacity:1; }
+
+/* slow, uneven sway per depth -- irregular timing reads as natural rather than mechanical */
+.scenery-mountains-back{ animation:swayBack 34s ease-in-out infinite; }
+.scenery-mountains{ animation:swayMid 24s ease-in-out infinite; }
+.scenery-hills{ animation:swayFront 17s ease-in-out infinite; }
+@keyframes swayBack{
+  0%,100%{ transform:translateX(0) translateY(0); }
+  50%{ transform:translateX(-1%) translateY(-.3%); }
+}
+@keyframes swayMid{
+  0%,100%{ transform:translateX(0) translateY(0); }
+  45%{ transform:translateX(-1.6%) translateY(-.2%); }
+  100%{ transform:translateX(0) translateY(0); }
+}
+@keyframes swayFront{
+  0%,100%{ transform:translateX(0); }
+  55%{ transform:translateX(-.8%); }
+}
+
+/* pine tree silhouettes framing the left/right margins, in front of cliffs */
+.scenery-pine{
+  position:fixed;
+  bottom:0;
+  width:22vw;
+  max-width:170px;
+  height:44vh;
+  min-height:250px;
+  opacity:1;
+  z-index:2;
+  filter:drop-shadow(0 -6px 18px rgba(0,0,0,.3));
+}
+.scenery-pine.left{ left:-2%; }
+.scenery-pine.right{ right:-2%; }
+
+/* fireflies drifting through the valley, sparse and warm */
+.scenery-fireflies{
+  position:fixed;
+  inset:0;
+  overflow:hidden;
+  z-index:1;
+}
+.scenery-fireflies .mote{
+  position:absolute;
+  border-radius:50%;
+  background:#ffe1a8;
+  box-shadow:0 0 8px 2px rgba(255,225,168,.7);
+  opacity:0;
+  animation:moteFloat linear infinite;
+}
+@keyframes moteFloat{
+  0%{ opacity:0; transform:translateY(0) translateX(0); }
+  15%{ opacity:.8; }
+  85%{ opacity:.4; }
+  100%{ opacity:0; transform:translateY(-60vh) translateX(var(--mote-drift, 20px)); }
+}
+
+.levels-scroll{
+  position:relative;
+  z-index:2;
+  width:100%;
+  height:100%;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  scroll-behavior:smooth;
+  pointer-events:auto;
+}
+
+.levels-header{
+  position:sticky;
+  top:0;
+  z-index:5;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:18px 16px 14px;
+  background:transparent;
+  backdrop-filter:blur(2px);
+}
+.levels-eyebrow{
+  font-size:11.5px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--gold-200);
+  opacity:.75;
+  margin:0 0 4px;
+}
+.levels-title{
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:21px;
+  margin:0;
+  color:#fff8ee;
+}
+.levels-title em{ font-style:italic; color:var(--gold-200); }
+
+.path-wrap{
+  position:relative;
+  width:min(92vw, 420px);
+  margin:0 auto;
+  padding:26px 0 90px;
+}
+
+.path-line{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  z-index:0;
+}
+.path-line path{
+  fill:none;
+  stroke:rgba(255,244,232,.35);
+  stroke-width:4;
+  stroke-linecap:round;
+  stroke-dasharray:2 16;
+}
+
+.node-list{
+  position:relative;
+  z-index:1;
+  list-style:none;
+  margin:0;
+  padding:0;
+}
+
+.node-item{
+  position:relative;
+  display:flex;
+  align-items:center;
+  height:92px;
+}
+.node-item.align-left{ justify-content:flex-start; }
+.node-item.align-right{ justify-content:flex-end; }
+.node-item.align-center{ justify-content:center; }
+
+.node{
+  position:relative;
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:13px;
+  color:rgba(255,244,232,.55);
+  background:linear-gradient(160deg, rgba(255,255,255,.10), rgba(255,255,255,.02));
+  border:1.5px solid rgba(255,244,232,.28);
+  box-shadow:0 6px 14px rgba(0,0,0,.25);
+  transition:transform .2s var(--ease-soft);
+  -webkit-tap-highlight-color:transparent;
+}
+
+.node .node-check{
+  display:none;
+  width:20px;
+  height:20px;
+}
+
+.node-item.cleared .node{
+  background:linear-gradient(160deg, #ffdfb0, #f2a94f);
+  border-color:#ffe6bd;
+  color:#5c2c10;
+  box-shadow:0 6px 16px rgba(242,169,79,.35);
+}
+.node-item.cleared .node .node-year{ display:none; }
+.node-item.cleared .node .node-check{ display:block; }
+
+.node-item.current .node{
+  color:#fff8ee;
+  border-color:var(--gold-200);
+  background:linear-gradient(160deg, rgba(255,223,176,.28), rgba(255,223,176,.06));
+  animation:nodePulse 1.8s ease-in-out infinite;
+  cursor:pointer;
+}
+@keyframes nodePulse{
+  0%,100%{ box-shadow:0 0 0 0 rgba(255,223,176,.45), 0 6px 14px rgba(0,0,0,.25); }
+  50%{ box-shadow:0 0 0 10px rgba(255,223,176,0), 0 6px 14px rgba(0,0,0,.25); }
+}
+.node-item.current .node:active{ transform:scale(.93); }
+
+.node-item.locked .node{
+  opacity:.4;
+  cursor:default;
+}
+.node-item.locked .node svg{ width:16px; height:16px; opacity:.8; }
+
+.node-label{
+  position:absolute;
+  font-family:var(--font-body);
+  font-size:10.5px;
+  letter-spacing:.06em;
+  color:rgba(255,244,232,.55);
+  white-space:nowrap;
+  top:50%;
+  transform:translateY(-50%);
+}
+.node-item.align-left .node-label{ left:76px; }
+.node-item.align-right .node-label{ right:76px; }
+.node-item.align-center .node-label{ top:auto; bottom:-2px; transform:none; }
+.node-item.current .node-label{ color:var(--gold-200); opacity:1; }
+
+/* little "you are here" flag above the active node */
+.here-flag{
+  position:absolute;
+  top:-30px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--gold-200);
+  background:rgba(59,32,80,.55);
+  border:1px solid rgba(255,223,176,.35);
+  border-radius:20px;
+  padding:3px 10px;
+  white-space:nowrap;
+  animation:floatFlag 2.2s ease-in-out infinite;
+}
+@keyframes floatFlag{
+  0%,100%{ transform:translateX(-50%) translateY(0); }
+  50%{ transform:translateX(-50%) translateY(-4px); }
+}
+
+/* ================= SCRATCH CARD OVERLAY ================= */
+.scratch-overlay{
+  position:fixed;
+  inset:0;
+  z-index:20;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(10,4,14,.72);
+  backdrop-filter:blur(3px);
+}
+.scratch-overlay.active{ display:flex; }
+
+.polaroid{
+  position:relative;
+  width:min(78vw, 300px);
+  background:#fbf4e8;
+  border-radius:6px;
+  padding:14px 14px 34px;
+  box-shadow:0 22px 50px rgba(0,0,0,.45);
+  animation:polaroidIn .5s var(--ease-soft) both;
+}
+@keyframes polaroidIn{
+  from{ opacity:0; transform:translateY(24px) rotate(-2deg) scale(.94); }
+  to{ opacity:1; transform:translateY(0) rotate(-1.2deg) scale(1); }
+}
+
+.polaroid-year{
+  position:absolute;
+  top:-14px;
+  left:50%;
+  transform:translateX(-50%);
+  background:var(--ember-500);
+  color:#fff8ee;
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:14px;
+  padding:4px 16px;
+  border-radius:20px;
+  box-shadow:0 6px 14px rgba(0,0,0,.3);
+}
+
+.scratch-canvas-wrap{
+  position:relative;
+  width:100%;
+  aspect-ratio:1/1;
+  border-radius:3px;
+  overflow:hidden;
+  background:#e8dccb;
+  touch-action:none;
+}
+.scratch-photo{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:var(--font-display);
+  font-size:15px;
+  color:#8a6a4a;
+  background:
+    repeating-linear-gradient(135deg, #f3e6d0 0 14px, #ecdcc0 14px 28px);
+}
+.scratch-canvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  cursor:grab;
+}
+
+.polaroid-caption{
+  margin:14px 4px 0;
+  text-align:center;
+  font-family:var(--font-body);
+  font-size:12.5px;
+  color:#7a6a55;
+  letter-spacing:.03em;
+}
+.polaroid-caption strong{
+  display:block;
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:14px;
+  color:#4a3a28;
+  margin-bottom:2px;
+}
+
+.scratch-continue{
+  display:none;
+  margin:14px auto 0;
+  padding:9px 22px;
+  border-radius:20px;
+  background:var(--ember-500);
+  color:#fff8ee;
+  font-family:var(--font-body);
+  font-size:13px;
+  font-weight:500;
+  letter-spacing:.02em;
+  box-shadow:0 8px 18px rgba(178,58,32,.35);
+}
+.scratch-continue.show{ display:block; animation:riseIn .4s var(--ease-soft) both; }
+
+/* ================= FINALE (level 2026 complete) ================= */
+.levels-finale{
+  position:fixed;
+  inset:0;
+  z-index:25;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:radial-gradient(120% 90% at 50% 30%, #4a2a63 0%, #1c0e26 70%);
+  text-align:center;
+  padding:24px;
+}
+.levels-finale.active{ display:flex; flex-direction:column; }
+.finale-inner{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.finale-title{
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:clamp(26px, 7vw, 38px);
+  color:#fff8ee;
+  margin:0 0 10px;
+}
+.finale-title em{ color:var(--gold-200); font-style:italic; }
+.finale-sub{
+  font-family:var(--font-body);
+  font-size:14px;
+  color:var(--gold-200);
+  opacity:.8;
+  margin:0 0 30px;
+  max-width:320px;
+}
+.finale-continue{
+  padding:12px 30px;
+  border-radius:24px;
+  background:linear-gradient(160deg, #ffdfb0, #f2a94f);
+  color:#5c2c10;
+  font-family:var(--font-body);
+  font-weight:600;
+  font-size:14px;
+  box-shadow:0 10px 24px rgba(242,169,79,.4);
+}
+
+/* ================= sparkle burst canvas (shared) ================= */
+.sparkle-canvas{
+  position:fixed;
+  inset:0;
+  z-index:30;
+  pointer-events:none;
+  display:none;
+}
+.sparkle-canvas.active{ display:block; }
+#phase-puzzle{
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(90% 60% at 50% 100%, rgba(120,30,20,.35) 0%, transparent 60%),
+    linear-gradient(180deg, #0c0203 0%, #170405 60%, #1c0705 100%);
+  overflow:hidden;
+}
+
+.puzzle-firefly-field{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+  z-index:0;
+}
+.firefly{
+  position:absolute;
+  border-radius:50%;
+  opacity:0;
+  animation:fireflyFloat linear infinite;
+}
+.firefly.gold{
+  background:#f2c66a;
+  box-shadow:0 0 6px 2px rgba(242,198,106,.7);
+}
+.firefly.pink{
+  background:#e0708a;
+  box-shadow:0 0 6px 2px rgba(224,112,138,.6);
+}
+@keyframes fireflyFloat{
+  0%{ opacity:0; transform:translateY(0) translateX(0); }
+  15%{ opacity:.85; }
+  85%{ opacity:.5; }
+  100%{ opacity:0; transform:translateY(-90vh) translateX(var(--drift, 30px)); }
+}
+
+.puzzle-wrap{
+  position:relative;
+  z-index:2;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  width:min(92vw, 380px);
+  padding:20px 0 40px;
+}
+
+.puzzle-eyebrow{
+  font-size:20px;
+  margin:0 0 4px;
+}
+
+.puzzle-title{
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:23px;
+  margin:0 0 4px;
+  color:#fff2df;
+  text-align:center;
+}
+
+.puzzle-sub{
+  font-family:var(--font-body);
+  font-size:12.5px;
+  color:#e3b477;
+  opacity:.75;
+  margin:0 0 18px;
+  text-align:center;
+}
+
+.puzzle-moves{
+  display:flex;
+  gap:26px;
+  margin-bottom:20px;
+}
+.puzzle-stat{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.puzzle-stat-value{
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:22px;
+  color:#f2c66a;
+}
+.puzzle-stat-label{
+  font-family:var(--font-body);
+  font-size:10px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:#c99a63;
+  opacity:.7;
+}
+
+.puzzle-board{
+  position:relative;
+  width:min(80vw, 300px);
+  height:min(80vw, 300px);
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  grid-template-rows:repeat(3, 1fr);
+  gap:5px;
+  padding:8px;
+  border-radius:10px;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(242,198,106,.18);
+  box-shadow:0 20px 46px rgba(0,0,0,.5);
+}
+
+.puzzle-tile{
+  position:relative;
+  border-radius:6px;
+  overflow:hidden;
+  cursor:pointer;
+  background-size:300% 300%;
+  background-repeat:no-repeat;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+  transition:transform .18s var(--ease-soft);
+}
+.puzzle-tile:active{ transform:scale(.96); }
+.puzzle-tile.blank{
+  background:none;
+  cursor:default;
+  box-shadow:none;
+}
+.puzzle-tile.movable::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  box-shadow:inset 0 0 0 2px rgba(242,198,106,.5);
+  border-radius:6px;
+  animation:tileHint 1.8s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes tileHint{
+  0%,100%{ opacity:.35; }
+  50%{ opacity:.85; }
+}
+
+.puzzle-shuffle{
+  margin-top:22px;
+  padding:10px 24px;
+  border-radius:22px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(242,198,106,.3);
+  color:#f2c66a;
+  font-family:var(--font-body);
+  font-size:13px;
+  font-weight:500;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  transition:background .2s, transform .15s var(--ease-soft);
+}
+.puzzle-shuffle:active{ transform:scale(.96); }
+.puzzle-shuffle svg{ width:15px; height:15px; }
+
+/* ---------- completion overlay ---------- */
+.puzzle-complete{
+  position:fixed;
+  inset:0;
+  z-index:25;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(6,2,2,.86);
+  backdrop-filter:blur(3px);
+  text-align:center;
+  padding:24px;
+}
+.puzzle-complete.active{ display:flex; }
+.puzzle-complete-inner{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  animation:polaroidIn .5s var(--ease-soft) both;
+}
+.puzzle-complete-photo{
+  width:min(70vw, 260px);
+  aspect-ratio:1/1;
+  border-radius:10px;
+  background-size:cover;
+  background-position:center;
+  box-shadow:0 20px 46px rgba(0,0,0,.5);
+  margin-bottom:18px;
+  border:1px solid rgba(242,198,106,.3);
+}
+.puzzle-complete-title{
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:24px;
+  color:#fff2df;
+  margin:0 0 6px;
+}
+.puzzle-complete-sub{
+  font-family:var(--font-body);
+  font-size:13px;
+  color:#e3b477;
+  opacity:.8;
+  margin:0 0 24px;
+}
+.puzzle-complete-continue{
+  padding:11px 26px;
+  border-radius:22px;
+  background:linear-gradient(160deg, #ffdfb0, #f2a94f);
+  color:#5c2c10;
+  font-family:var(--font-body);
+  font-weight:600;
+  font-size:13.5px;
+  box-shadow:0 10px 24px rgba(242,169,79,.4);
+}
+#phase-letter{
+  align-items:center;
+  justify-content:center;
+  background:#0a0202;
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+
+/* shared firefly/sparkle backdrop, same species as phase 4 */
+.letter-firefly-field{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ================= STEP A: CURTAIN ================= */
+.letter-curtain{
+  position:absolute;
+  inset:0;
+  z-index:5;
+  display:flex;
+  transition:opacity .6s var(--ease-soft);
+}
+.letter-curtain.hidden{
+  opacity:0;
+  pointer-events:none;
+}
+.curtain-half{
+  flex:1;
+  background:
+    repeating-linear-gradient(90deg, #7a1210 0px, #8f1613 6px, #6e0f0d 12px),
+    linear-gradient(180deg, #8f1613, #4c0906);
+  box-shadow:inset 0 0 60px rgba(0,0,0,.55);
+  transition:transform .9s var(--ease-soft);
+}
+.curtain-half.left{ transform-origin:left center; }
+.curtain-half.right{ transform-origin:right center; }
+.letter-curtain.opening .curtain-half.left{ transform:translateX(-102%); }
+.letter-curtain.opening .curtain-half.right{ transform:translateX(102%); }
+
+.curtain-open-btn{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  z-index:6;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:11px 26px;
+  border-radius:24px;
+  background:rgba(10,3,3,.75);
+  border:1px solid rgba(255,220,190,.25);
+  color:#ffe9d6;
+  font-family:var(--font-body);
+  font-size:13.5px;
+  font-weight:500;
+  letter-spacing:.03em;
+  box-shadow:0 10px 26px rgba(0,0,0,.4);
+}
+.curtain-open-btn svg{ width:16px; height:16px; }
+
+/* ================= STEP B: ENVELOPE ================= */
+.letter-stage{
+  position:relative;
+  z-index:2;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  width:min(92vw, 380px);
+  margin:auto;
+  padding:24px 0;
+}
+
+.letter-heart{
+  font-size:26px;
+  margin-bottom:6px;
+  animation:heartBeat 2.4s ease-in-out infinite;
+}
+@keyframes heartBeat{
+  0%,100%{ transform:scale(1); }
+  15%{ transform:scale(1.15); }
+  30%{ transform:scale(1); }
+}
+
+.letter-title{
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:22px;
+  color:#ffe9d6;
+  margin:0 0 22px;
+  text-align:center;
+}
+
+.envelope{
+  position:relative;
+  width:min(78vw, 280px);
+  aspect-ratio:16/10;
+  cursor:pointer;
+  filter:drop-shadow(0 18px 34px rgba(0,0,0,.5));
+}
+.envelope-body{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(160deg, #d9a05c, #b97a3c);
+  border-radius:8px;
+}
+.envelope-flap{
+  position:absolute;
+  top:0; left:0; right:0;
+  height:58%;
+  background:linear-gradient(160deg, #e7b06e, #c5883f);
+  clip-path:polygon(0 0, 100% 0, 50% 82%);
+  transform-origin:top center;
+  transition:transform .6s var(--ease-soft);
+  z-index:2;
+}
+.envelope.open .envelope-flap{
+  transform:rotateX(180deg);
+  z-index:0;
+}
+.envelope-seal{
+  position:absolute;
+  top:38%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #ff8fa6, #d43d5f);
+  box-shadow:0 4px 10px rgba(0,0,0,.35);
+  z-index:3;
+  transition:opacity .3s;
+}
+.envelope.open .envelope-seal{ opacity:0; }
+
+.letter-tap-hint{
+  margin-top:16px;
+  font-family:var(--font-body);
+  font-size:12px;
+  color:#e3b477;
+  opacity:.65;
+  letter-spacing:.03em;
+}
+.letter-tap-hint.hide{ opacity:0; }
+
+/* ================= STEP C: LETTER CARD ================= */
+.letter-card{
+  position:relative;
+  width:min(86vw, 340px);
+  max-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  opacity:0;
+  background:rgba(20,8,8,.72);
+  border:1px solid rgba(255,220,190,.2);
+  border-radius:10px;
+  box-shadow:0 24px 50px rgba(0,0,0,.5);
+  backdrop-filter:blur(4px);
+  transition:max-height .7s var(--ease-soft), opacity .5s ease, margin-top .7s var(--ease-soft);
+  margin-top:-20px;
+}
+.letter-card.show{
+  max-height:min(60vh, 640px);
+  opacity:1;
+  margin-top:22px;
+}
+.letter-card-inner{
+  padding:26px 24px 28px;
+  font-family:var(--font-body);
+  font-size:14.5px;
+  line-height:1.75;
+  color:#fbe9d6;
+}
+.letter-card-inner .salutation{
+  font-family:var(--font-display);
+  font-style:italic;
+  font-size:18px;
+  color:#ffdfb0;
+  margin:0 0 14px;
+}
+.letter-card-inner p{
+  margin:0 0 14px;
+}
+.letter-card-inner .signoff{
+  margin-top:18px;
+  font-family:var(--font-display);
+  font-style:italic;
+  font-size:16px;
+  color:#ffdfb0;
+}
+
+/* placeholder styling so it's obviously a stand-in until real text arrives */
+.letter-placeholder-tag{
+  display:inline-block;
+  font-family:var(--font-body);
+  font-size:10.5px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#e3b477;
+  background:rgba(242,169,79,.12);
+  border:1px dashed rgba(242,169,79,.4);
+  border-radius:6px;
+  padding:2px 8px;
+  margin-bottom:10px;
+}
+
+/* ================= BALLOONS ================= */
+.balloon-field{
+  position:fixed;
+  inset:0;
+  z-index:10;
+  pointer-events:none;
+  overflow:hidden;
+}
+.balloon{
+  position:absolute;
+  bottom:-140px;
+  width:46px;
+  height:58px;
+  border-radius:50% 50% 50% 50% / 58% 58% 42% 42%;
+  opacity:0;
+  animation:balloonRise linear forwards;
+}
+.balloon::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:100%;
+  width:1px;
+  height:34px;
+  background:rgba(255,255,255,.25);
+  transform:translateX(-50%);
+}
+.balloon::after{
+  content:"";
+  position:absolute;
+  left:32%;
+  top:22%;
+  width:12px;
+  height:16px;
+  background:rgba(255,255,255,.35);
+  border-radius:50%;
+  filter:blur(1px);
+}
+@keyframes balloonRise{
+  0%{ opacity:0; transform:translateY(0) translateX(0) rotate(0deg); }
+  8%{ opacity:.95; }
+  92%{ opacity:.85; }
+  100%{ opacity:0; transform:translateY(-118vh) translateX(var(--sway, 30px)) rotate(var(--tilt, 6deg)); }
+}
+
+</style>
+</head>
+<body>
+
+  <!-- ============ PHASE 1: LOGIN ============ -->
+  <section id="phase-login" class="phase active">
+    <div class="grain"></div>
+
+    <div class="dial-rings" aria-hidden="true">
+      <svg viewBox="0 0 400 400">
+        <circle cx="200" cy="200" r="190" fill="none" stroke="#f4c98a" stroke-width="1"/>
+        <circle cx="200" cy="200" r="150" fill="none" stroke="#f4c98a" stroke-width="1"/>
+        <circle cx="200" cy="200" r="110" fill="none" stroke="#f4c98a" stroke-width="1"/>
+      </svg>
+    </div>
+
+    <div class="login-wrap">
+
+      <div class="dial-mark" aria-hidden="true">
+        <svg viewBox="0 0 100 100">
+          <path class="ring" d="M50,10 C74,10 90,28 91,50 C92,73 74,90 51,90 C29,91 11,75 10,53 C9,32 24,12 47,10.5"/>
+          <circle class="pin" cx="50" cy="46" r="7"/>
+          <path class="pin" d="M43 54 Q50 70 57 54 Z"/>
+        </svg>
+      </div>
+
+      <p class="login-eyebrow">for you, only</p>
+      <h1 class="login-title">Enter the code to <em>begin</em></h1>
+      <p class="login-hint">a date you'll never forget</p>
+
+      <div class="code-dots" id="codeDots">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+
+      <div class="keypad" id="keypad">
+        <button class="key" data-key="1">1</button>
+        <button class="key" data-key="2">2</button>
+        <button class="key" data-key="3">3</button>
+        <button class="key" data-key="4">4</button>
+        <button class="key" data-key="5">5</button>
+        <button class="key" data-key="6">6</button>
+        <button class="key" data-key="7">7</button>
+        <button class="key" data-key="8">8</button>
+        <button class="key" data-key="9">9</button>
+        <span class="key key-empty" aria-hidden="true"></span>
+        <button class="key" data-key="0">0</button>
+        <button class="key key-back" data-key="back" aria-label="Delete last digit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 5H8l-6 7 6 7h13a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1Z"/>
+            <path d="M14 10l4 4M18 10l-4 4"/>
+          </svg>
+        </button>
+      </div>
+
+      <p class="login-error" id="loginError">that's not quite it — try again</p>
+    </div>
+  </section>
+
+  <!-- ============ PHASE 2: LOADING ============ -->
+  <section id="phase-loading" class="phase">
+    <div class="ember-field" id="emberField"></div>
+    <div class="loading-wrap">
+      <div class="loading-glow" aria-hidden="true"></div>
+      <div class="loading-number" id="loadingNumber">10</div>
+      <p class="loading-caption">
+        loading something special
+        <span class="loading-dots"><span></span><span></span><span></span></span>
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ PHASE 3: LEVELS 2008-2026 ============ -->
+  <section id="phase-levels" class="phase">
+    <div class="levels-scenery" aria-hidden="true">
+      <div class="scenery-sun-disc"></div>
+      <div class="scenery-sun"></div>
+
+      <!-- far, soft-focus cloud bank -->
+      <svg class="scenery-clouds far" viewBox="0 0 800 160" preserveAspectRatio="none">
+        <defs>
+          <radialGradient id="cloudFarGrad" cx="35%" cy="30%" r="75%">
+            <stop offset="0%" stop-color="#fff0d8"/>
+            <stop offset="55%" stop-color="#f3c9c0"/>
+            <stop offset="100%" stop-color="#d9a3ad"/>
+          </radialGradient>
+        </defs>
+        <g fill="url(#cloudFarGrad)" opacity=".8" filter="url(#blurFar)">
+          <circle cx="70" cy="75" r="42"/><circle cx="105" cy="60" r="34"/><circle cx="135" cy="78" r="30"/><circle cx="40" cy="85" r="28"/>
+          <circle cx="430" cy="90" r="50"/><circle cx="470" cy="70" r="38"/><circle cx="510" cy="92" r="32"/><circle cx="390" cy="98" r="30"/>
+          <circle cx="700" cy="80" r="44"/><circle cx="740" cy="62" r="32"/><circle cx="665" cy="92" r="28"/>
+        </g>
+        <defs><filter id="blurFar"><feGaussianBlur stdDeviation="3"/></filter></defs>
+      </svg>
+
+      <!-- near clouds: painterly overlapping puffs, warm highlight to soft shadow -->
+      <svg class="scenery-clouds" viewBox="0 0 800 180" preserveAspectRatio="none">
+        <defs>
+          <radialGradient id="cloudNearGrad" cx="32%" cy="25%" r="80%">
+            <stop offset="0%" stop-color="#fff6e2"/>
+            <stop offset="45%" stop-color="#ffd9a0"/>
+            <stop offset="80%" stop-color="#e88fa0"/>
+            <stop offset="100%" stop-color="#c96a8a"/>
+          </radialGradient>
+        </defs>
+        <g fill="url(#cloudNearGrad)">
+          <circle cx="60" cy="95" r="52"/><circle cx="105" cy="72" r="40"/><circle cx="150" cy="98" r="36"/><circle cx="25" cy="105" r="30"/><circle cx="130" cy="112" r="28"/>
+          <circle cx="360" cy="105" r="60"/><circle cx="415" cy="78" r="44"/><circle cx="465" cy="100" r="38"/><circle cx="325" cy="118" r="34"/><circle cx="440" cy="124" r="30"/>
+          <circle cx="640" cy="90" r="48"/><circle cx="685" cy="68" r="34"/><circle cx="605" cy="105" r="28"/>
+        </g>
+      </svg>
+
+      <!-- distant mountain range: cool atmospheric haze, jagged rocky peaks -->
+      <svg class="scenery-mountains-back" viewBox="0 0 400 150" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="mtnBackGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#9b83c4"/>
+            <stop offset="100%" stop-color="#6f5aa0"/>
+          </linearGradient>
+        </defs>
+        <path fill="url(#mtnBackGrad)" d="M0,150 L0,78 L24,56 L38,68 L58,38 L72,54 L92,44 L108,66 L128,30 L146,58 L168,42 L188,64 L208,36 L230,60 L252,46 L272,64 L296,32 L316,58 L340,44 L360,62 L382,40 L400,58 L400,150 Z"/>
+        <g fill="#c9bfe6" opacity=".55">
+          <path d="M128,30 L138,42 L120,50 Z"/>
+          <path d="M296,32 L306,44 L288,52 Z"/>
+        </g>
+      </svg>
+
+      <!-- mid mountain range: dimensional rock-facet shading, light/shadow planes -->
+      <svg class="scenery-mountains" viewBox="0 0 400 160" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="mtnMidLight" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#d69bb4"/>
+            <stop offset="100%" stop-color="#9a5478"/>
+          </linearGradient>
+          <linearGradient id="mtnMidShadow" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7a3a62"/>
+            <stop offset="100%" stop-color="#4e2440"/>
+          </linearGradient>
+        </defs>
+        <!-- shadowed rock mass -->
+        <path fill="url(#mtnMidShadow)" d="M0,160 L0,96 L18,80 L34,92 L58,62 L78,84 L98,68 L118,88 L145,48 L168,78 L188,60 L212,82 L238,56 L262,80 L286,64 L308,86 L332,58 L356,82 L378,68 L400,84 L400,160 Z"/>
+        <!-- lit rock facets, offset triangular planes catching the light -->
+        <g fill="url(#mtnMidLight)">
+          <path d="M58,62 L78,84 L64,80 L50,72 Z"/>
+          <path d="M145,48 L168,78 L152,72 L136,60 Z"/>
+          <path d="M238,56 L262,80 L246,74 L228,64 Z"/>
+          <path d="M332,58 L356,82 L340,76 L322,66 Z"/>
+        </g>
+        <!-- snow caps -->
+        <g fill="#fbeee2" opacity=".85">
+          <path d="M58,62 L67,50 L78,84 L64,80 L48,68 Z"/>
+          <path d="M145,48 L155,36 L168,78 L152,72 L134,58 Z"/>
+          <path d="M238,56 L247,44 L262,80 L246,74 L226,62 Z"/>
+          <path d="M332,58 L341,46 L356,82 L340,76 L320,64 Z"/>
+        </g>
+      </svg>
+
+      <!-- rolling hills: layered organic curves with tonal shading, river, pole -->
+      <svg class="scenery-hills" viewBox="0 0 400 120" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="hillFarGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#6a9a5f"/>
+            <stop offset="100%" stop-color="#4a7a48"/>
+          </linearGradient>
+          <linearGradient id="hillNearGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4f8a52"/>
+            <stop offset="100%" stop-color="#2e5c38"/>
+          </linearGradient>
+          <linearGradient id="riverGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#a8d8e8"/>
+            <stop offset="100%" stop-color="#4f8fbf"/>
+          </linearGradient>
+        </defs>
+        <path fill="url(#hillFarGrad)" d="M0,120 L0,70 Q50,50 100,68 Q150,50 210,66 Q260,48 320,64 Q360,54 400,60 L400,120 Z"/>
+        <path fill="url(#hillNearGrad)" d="M0,120 L0,88 Q60,70 120,86 Q175,68 235,84 Q290,66 340,82 Q370,72 400,78 L400,120 Z"/>
+        <path fill="url(#riverGrad)" opacity=".85" d="M155,120 Q165,95 182,80 Q198,90 194,110 Q188,120 178,120 Z"/>
+        <g stroke="#26421f" stroke-width="1.3" opacity=".75" stroke-linecap="round">
+          <line x1="78" y1="80" x2="78" y2="52"/>
+          <line x1="64" y1="60" x2="92" y2="60"/>
+          <line x1="78" y1="52" x2="64" y2="44"/>
+          <line x1="78" y1="52" x2="92" y2="44"/>
+          <line x1="64" y1="60" x2="52" y2="76"/>
+          <line x1="92" y1="60" x2="104" y2="76"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="scenery-fireflies" id="levelsFireflies"></div>
+
+    <div class="levels-scroll" id="levelsScroll">
+      <div class="levels-header">
+        <h2 class="levels-title">2008 to <em>2026</em></h2>
+      </div>
+
+      <div class="path-wrap">
+        <svg class="path-line" id="pathLine"></svg>
+        <ul class="node-list" id="nodeList"></ul>
+      </div>
+    </div>
+
+    <!-- scratch card overlay -->
+    <div class="scratch-overlay" id="scratchOverlay">
+      <div class="polaroid">
+        <span class="polaroid-year" id="polaroidYear" aria-hidden="true"></span>
+        <div class="scratch-canvas-wrap">
+          <div class="scratch-photo" id="scratchPhoto"></div>
+          <canvas class="scratch-canvas" id="scratchCanvas"></canvas>
+        </div>
+        <p class="polaroid-caption" id="polaroidCaption"></p>
+        <button class="scratch-continue" id="scratchContinue">continue ✦</button>
+      </div>
+    </div>
+
+    <!-- finale after level 2026 -->
+    <div class="levels-finale" id="levelsFinale">
+      <div class="finale-inner">
+        <h2 class="finale-title">Eighteen years,<br><em>one story</em></h2>
+        <p class="finale-sub">Every year scratched away, every memory found. There's one more thing waiting for you.</p>
+        <button class="finale-continue" id="finaleContinue">Continue ✦</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PHASE 4: PHOTO PUZZLE ============ -->
+  <section id="phase-puzzle" class="phase">
+    <div class="puzzle-firefly-field" id="puzzleFireflies"></div>
+
+    <div class="puzzle-wrap">
+      <p class="puzzle-eyebrow">🎁</p>
+      <h2 class="puzzle-title">Birthday Puzzle</h2>
+      <p class="puzzle-sub">Solve to unlock a special message ✨</p>
+
+      <div class="puzzle-moves">
+        <div class="puzzle-stat">
+          <span class="puzzle-stat-value" id="puzzleMoves">0</span>
+          <span class="puzzle-stat-label">moves</span>
+        </div>
+      </div>
+
+      <div class="puzzle-board" id="puzzleBoard"></div>
+
+      <button class="puzzle-shuffle" id="puzzleShuffle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/>
+        </svg>
+        Shuffle Again
+      </button>
+    </div>
+
+    <!-- completion overlay -->
+    <div class="puzzle-complete" id="puzzleComplete">
+      <div class="puzzle-complete-inner">
+        <div class="puzzle-complete-photo" id="puzzleCompletePhoto"></div>
+        <h3 class="puzzle-complete-title">Puzzle complete! 🎉</h3>
+        <p class="puzzle-complete-sub">One last surprise is waiting for you</p>
+        <button class="puzzle-complete-continue" id="puzzleCompleteContinue">One Last Surprise →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PHASE 5: LETTER + BALLOONS ============ -->
+  <section id="phase-letter" class="phase">
+    <div class="letter-firefly-field" id="letterFireflies"></div>
+    <div class="balloon-field" id="balloonField"></div>
+
+    <!-- curtain reveal beat, from the "Open" reference -->
+    <div class="letter-curtain" id="letterCurtain">
+      <div class="curtain-half left"></div>
+      <div class="curtain-half right"></div>
+      <button class="curtain-open-btn" id="curtainOpenBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 12V8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v4"/>
+          <path d="M4 12h16v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6Z"/>
+        </svg>
+        Open
+      </button>
+    </div>
+
+    <div class="letter-stage">
+      <p class="letter-heart">💌</p>
+      <h2 class="letter-title">A Letter Just For You</h2>
+
+      <div class="envelope" id="envelope">
+        <div class="envelope-body"></div>
+        <div class="envelope-flap"></div>
+        <div class="envelope-seal"></div>
+      </div>
+      <p class="letter-tap-hint" id="letterTapHint">tap to open ✦</p>
+
+      <div class="letter-card" id="letterCard"></div>
+    </div>
+  </section>
+
+  <script>
+(function () {
+  function burstSparkles(opts) {
+    const {
+      count = 60,
+      duration = 1400,
+      colors = ["#ffdfb0", "#f2a94f", "#fff4e8", "#ff9d6c"],
+      originX = null, // null = center of screen
+      originY = null,
+      spread = "full", // "full" screen or "point" burst from origin
+    } = opts || {};
+
+    let canvas = document.querySelector(".sparkle-canvas");
+    if (!canvas) {
+      canvas = document.createElement("canvas");
+      canvas.className = "sparkle-canvas";
+      document.body.appendChild(canvas);
+    }
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.classList.add("active");
+    const ctx = canvas.getContext("2d");
+
+    const cx = originX ?? canvas.width / 2;
+    const cy = originY ?? canvas.height / 2;
+
+    const particles = [];
+    for (let i = 0; i < count; i++) {
+      let x, y, vx, vy;
+      if (spread === "point") {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 1.5 + Math.random() * 4.5;
+        x = cx; y = cy;
+        vx = Math.cos(angle) * speed;
+        vy = Math.sin(angle) * speed - 1.5;
+      } else {
+        x = Math.random() * canvas.width;
+        y = canvas.height + 10;
+        vx = (Math.random() - 0.5) * 0.6;
+        vy = -(1 + Math.random() * 2.4);
+      }
+      particles.push({
+        x, y, vx, vy,
+        r: 1.2 + Math.random() * 2.4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        life: 0,
+        maxLife: duration * (0.6 + Math.random() * 0.4),
+        twinkle: Math.random() * Math.PI * 2,
+      });
+    }
+
+    const start = performance.now();
+
+    function frame(now) {
+      const elapsed = now - start;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      let alive = false;
+      particles.forEach((p) => {
+        p.life += 16;
+        if (p.life > p.maxLife) return;
+        alive = true;
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.02; // gentle gravity
+        p.twinkle += 0.15;
+
+        const lifeRatio = p.life / p.maxLife;
+        const alpha = Math.sin(lifeRatio * Math.PI) * (0.6 + 0.4 * Math.sin(p.twinkle));
+
+        ctx.beginPath();
+        ctx.globalAlpha = Math.max(alpha, 0);
+        ctx.fillStyle = p.color;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = p.color;
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+
+      if (alive && elapsed < duration + 400) {
+        requestAnimationFrame(frame);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.classList.remove("active");
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  window.Sparkles = { burst: burstSparkles };
+})();
+(function () {
+  const PASSCODE = "26072008";
+
+  const dotsWrap   = document.getElementById("codeDots");
+  const dots       = dotsWrap ? Array.from(dotsWrap.querySelectorAll(".dot")) : [];
+  const keypad     = document.getElementById("keypad");
+  const errorLabel = document.getElementById("loginError");
+
+  let entered = "";
+  let locked  = false; // true while a wrong-code shake/reset is playing
+
+  function updateDots() {
+    dots.forEach((dot, i) => {
+      dot.classList.toggle("filled", i < entered.length);
+    });
+  }
+
+  function showError(msg) {
+    errorLabel.textContent = msg;
+    errorLabel.classList.add("show");
+  }
+
+  function clearError() {
+    errorLabel.classList.remove("show");
+  }
+
+  function resetEntry({ shake = false } = {}) {
+    locked = true;
+    if (shake) {
+      dotsWrap.classList.add("shake");
+      showError("that's not quite it — try again");
+    }
+    setTimeout(() => {
+      entered = "";
+      updateDots();
+      dotsWrap.classList.remove("shake");
+      locked = false;
+    }, shake ? 480 : 0);
+  }
+
+  function handleSuccess() {
+    locked = true;
+    clearError();
+    dots.forEach((dot) => dot.classList.add("filled"));
+    try { localStorage.setItem("bday_phase", "loading"); } catch (e) {}
+
+    // brief celebratory pause on the filled dots before the screen transitions
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent("loginSuccess"));
+    }, 550);
+  }
+
+  function pressDigit(value) {
+    if (locked) return;
+    clearError();
+
+    if (value === "back") {
+      entered = entered.slice(0, -1);
+      updateDots();
+      return;
+    }
+
+    if (entered.length >= PASSCODE.length) return;
+
+    entered += value;
+    updateDots();
+
+    if (entered.length === PASSCODE.length) {
+      if (entered === PASSCODE) {
+        handleSuccess();
+      } else {
+        resetEntry({ shake: true });
+      }
+    }
+  }
+
+  function flashKey(el) {
+    el.classList.add("pressed");
+    setTimeout(() => el.classList.remove("pressed"), 140);
+  }
+
+  if (keypad) {
+    keypad.addEventListener("click", (e) => {
+      const btn = e.target.closest(".key[data-key]");
+      if (!btn) return;
+      flashKey(btn);
+      pressDigit(btn.dataset.key);
+    });
+  }
+
+  // allow physical keyboard too (handy for desktop testing, harmless on mobile)
+  window.addEventListener("keydown", (e) => {
+    const loginPhase = document.getElementById("phase-login");
+    if (!loginPhase || !loginPhase.classList.contains("active")) return;
+
+    if (/^[0-9]$/.test(e.key)) {
+      const btn = keypad.querySelector(`.key[data-key="${e.key}"]`);
+      if (btn) flashKey(btn);
+      pressDigit(e.key);
+    } else if (e.key === "Backspace") {
+      const btn = keypad.querySelector('.key[data-key="back"]');
+      if (btn) flashKey(btn);
+      pressDigit("back");
+    }
+  });
+
+  updateDots();
+})();
+(function () {
+  const numberEl  = document.getElementById("loadingNumber");
+  const emberField = document.getElementById("emberField");
+  let intervalId = null;
+  let started = false;
+
+  function spawnEmbers(count) {
+    if (!emberField) return;
+    emberField.innerHTML = "";
+    for (let i = 0; i < count; i++) {
+      const e = document.createElement("span");
+      e.className = "ember";
+      const left = Math.random() * 100;
+      const duration = 4 + Math.random() * 4;
+      const delay = Math.random() * 6;
+      const drift = (Math.random() * 40 - 20).toFixed(0) + "px";
+      e.style.left = left + "vw";
+      e.style.setProperty("--drift", drift);
+      e.style.animationDuration = duration + "s";
+      e.style.animationDelay = delay + "s";
+      emberField.appendChild(e);
+    }
+  }
+
+  function setNumber(n) {
+    numberEl.textContent = n;
+    numberEl.classList.remove("tick");
+    // force reflow so the animation replays each tick
+    void numberEl.offsetWidth;
+    numberEl.classList.add("tick");
+  }
+
+  function runCountdown() {
+    let n = 10;
+    setNumber(n);
+    intervalId = setInterval(() => {
+      n -= 1;
+      if (n <= 0) {
+        clearInterval(intervalId);
+        setTimeout(() => {
+          try { localStorage.setItem("bday_phase", "levels"); } catch (e) {}
+          window.dispatchEvent(new CustomEvent("loadingComplete"));
+        }, 550);
+        return;
+      }
+      setNumber(n);
+    }, 850);
+  }
+
+  function startLoadingPhase() {
+    if (started) return;
+    started = true;
+    spawnEmbers(22);
+    runCountdown();
+  }
+
+  window.addEventListener("enterLoading", startLoadingPhase);
+
+  // expose for main.js in case it needs to trigger manually
+  window.__startLoadingPhase = startLoadingPhase;
+})();
+(function () {
+  const START_YEAR = 2008;
+  const END_YEAR   = 2020;
+  const YEARS = [];
+  for (let y = START_YEAR; y <= END_YEAR; y++) YEARS.push(y);
+  const TOTAL = YEARS.length; // 13
+  const LEVEL_PHOTOS = [
+    "koyel%20doyel/757065163_1540446207545260_5290635884608950356_n.jpg",
+    "koyel%20doyel/751504267_968506142873040_4892305931347189871_n.jpg",
+    "koyel%20doyel/751611087_907660799053785_4627283819315494415_n.jpg",
+    "koyel%20doyel/751882782_1578171047047114_3113963728737808414_n.jpg",
+    "koyel%20doyel/752723439_2454294448390224_4777994137613750187_n.jpg",
+    "koyel%20doyel/752893046_1027728936473035_9098439741563575688_n.jpg",
+    "koyel%20doyel/753169359_1546092623964319_8503502025749776957_n.jpg",
+    "koyel%20doyel/753259973_2101471807249340_2278991354778425446_n.jpg",
+    "koyel%20doyel/754323261_871019609083923_7315931753773463003_n.jpg",
+    "koyel%20doyel/754497181_1703317637554553_796049219509794272_n.jpg",
+    "koyel%20doyel/754835342_879422418150144_8389073368905227483_n.jpg",
+    "koyel%20doyel/755220888_1281183580629333_8463304880723563644_n.jpg",
+    "koyel%20doyel/756034518_987490227622379_4128650559658312849_n.jpg"
+  ];
+
+  const nodeListEl   = document.getElementById("nodeList");
+  const pathLineEl   = document.getElementById("pathLine");
+  const scrollEl     = document.getElementById("levelsScroll");
+  const overlayEl    = document.getElementById("scratchOverlay");
+  const canvasEl     = document.getElementById("scratchCanvas");
+  const photoEl      = document.getElementById("scratchPhoto");
+  const yearBadgeEl  = document.getElementById("polaroidYear");
+  const captionEl    = document.getElementById("polaroidCaption");
+  const continueBtn  = document.getElementById("scratchContinue");
+  const finaleEl     = document.getElementById("levelsFinale");
+  const finaleContinueBtn = document.getElementById("finaleContinue");
+
+  let scratched = loadProgress();
+  let activeYearIndex = firstUnclearedIndex();
+  let ctx = null;
+  let isScratching = false;
+  let scratchedPixelCheckPending = false;
+  let scratchDone = false;
+
+  function loadProgress() {
+    try {
+      const raw = localStorage.getItem("bday_scratched");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length === TOTAL) return parsed;
+      }
+    } catch (e) {}
+    return new Array(TOTAL).fill(false);
+  }
+
+  function saveProgress() {
+    try { localStorage.setItem("bday_scratched", JSON.stringify(scratched)); } catch (e) {}
+  }
+
+  function firstUnclearedIndex() {
+    const idx = scratched.findIndex((v) => !v);
+    return idx === -1 ? TOTAL : idx;
+  }
+
+  // ---------- build the winding path ----------
+  function alignForIndex(i) {
+    const m = i % 4;
+    if (m === 0) return "left";
+    if (m === 1) return "center";
+    if (m === 2) return "right";
+    return "center";
+  }
+
+  function renderNodes() {
+    nodeListEl.innerHTML = "";
+    YEARS.forEach((year, i) => {
+      const li = document.createElement("li");
+      const align = alignForIndex(i);
+      li.className = `node-item align-${align}`;
+      li.dataset.index = i;
+
+      let state = "locked";
+      if (scratched[i]) state = "cleared";
+      else if (i === activeYearIndex) state = "current";
+      li.classList.add(state);
+
+      const node = document.createElement("div");
+      node.className = "node";
+
+      if (state === "current") {
+        const flag = document.createElement("span");
+        flag.className = "here-flag";
+        flag.textContent = "you are here";
+        li.appendChild(flag);
+      }
+
+      if (state === "locked") {
+        node.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <rect x="5" y="11" width="14" height="9" rx="2"/>
+            <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+          </svg>`;
+      } else {
+        node.innerHTML = `
+          <svg class="node-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>`;
+      }
+
+      li.appendChild(node);
+      nodeListEl.appendChild(li);
+
+      if (state === "current") {
+        node.addEventListener("click", () => openScratchCard(i));
+      }
+    });
+
+    drawPathLine();
+  }
+
+  function drawPathLine() {
+    // simple smooth vertical wave connecting node centers
+    requestAnimationFrame(() => {
+      const items = Array.from(nodeListEl.querySelectorAll(".node-item"));
+      if (!items.length) return;
+      const wrapRect = nodeListEl.getBoundingClientRect();
+      const points = items.map((li) => {
+        const node = li.querySelector(".node");
+        const r = node.getBoundingClientRect();
+        return {
+          x: r.left + r.width / 2 - wrapRect.left,
+          y: r.top + r.height / 2 - wrapRect.top,
+        };
+      });
+      let d = `M ${points[0].x} ${points[0].y}`;
+      for (let i = 1; i < points.length; i++) {
+        const prev = points[i - 1];
+        const curr = points[i];
+        const midY = (prev.y + curr.y) / 2;
+        d += ` C ${prev.x} ${midY}, ${curr.x} ${midY}, ${curr.x} ${curr.y}`;
+      }
+      pathLineEl.innerHTML = `<path d="${d}"></path>`;
+      pathLineEl.setAttribute("viewBox", `0 0 ${wrapRect.width} ${wrapRect.height}`);
+    });
+  }
+
+  function scrollToActiveNode() {
+    const current = nodeListEl.querySelector(".node-item.current");
+    if (current && scrollEl) {
+      const targetTop = current.offsetTop - scrollEl.clientHeight / 2 + 46;
+      scrollEl.scrollTo({ top: Math.max(targetTop, 0), behavior: "auto" });
+    }
+  }
+
+  // ---------- scratch card ----------
+  function openScratchCard(index) {
+    activeYearIndex = index;
+    yearBadgeEl.textContent = "";
+    captionEl.innerHTML = "scratch to reveal the moment";
+    continueBtn.classList.remove("show");
+
+    const photoUrl = LEVEL_PHOTOS[index % LEVEL_PHOTOS.length];
+    photoEl.textContent = "";
+    photoEl.style.background = "transparent";
+    photoEl.style.backgroundImage = `url("${photoUrl}")`;
+    photoEl.style.backgroundSize = "cover";
+    photoEl.style.backgroundPosition = "center";
+    photoEl.style.backgroundRepeat = "no-repeat";
+    photoEl.style.color = "transparent";
+
+    overlayEl.classList.add("active");
+    setupScratchCanvas();
+  }
+
+  function setupScratchCanvas() {
+    // reset state left over from the previous card (opacity/pointer-events
+    // were disabled in completeScratch and never restored)
+    canvasEl.style.transition = "none";
+    canvasEl.style.opacity = "1";
+    canvasEl.style.pointerEvents = "auto";
+
+    const wrap = canvasEl.parentElement;
+    const size = wrap.getBoundingClientRect();
+    canvasEl.width = size.width;
+    canvasEl.height = size.height;
+    ctx = canvasEl.getContext("2d");
+
+    // foil overlay
+    const grad = ctx.createLinearGradient(0, 0, size.width, size.height);
+    grad.addColorStop(0, "#cfc3ae");
+    grad.addColorStop(0.5, "#e9ddc6");
+    grad.addColorStop(1, "#bfb198");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size.width, size.height);
+
+    ctx.fillStyle = "rgba(90,70,45,0.55)";
+    ctx.font = "600 16px 'Outfit', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("scratch here", size.width / 2, size.height / 2 - 10);
+    ctx.font = "13px 'Outfit', sans-serif";
+    ctx.fillText("✦", size.width / 2, size.height / 2 + 16);
+
+    ctx.globalCompositeOperation = "destination-out";
+
+    isScratching = false;
+    scratchedPixelCheckPending = false;
+    scratchDone = false;
+
+    canvasEl.onpointerdown = (e) => { isScratching = true; scratchAt(e); };
+    canvasEl.onpointermove = (e) => { if (isScratching) scratchAt(e); };
+    window.onpointerup = () => { isScratching = false; };
+    canvasEl.onpointerleave = () => {};
+  }
+
+  function scratchAt(e) {
+    const rect = canvasEl.getBoundingClientRect();
+    const x = (e.clientX ?? e.touches?.[0]?.clientX) - rect.left;
+    const y = (e.clientY ?? e.touches?.[0]?.clientY) - rect.top;
+    ctx.beginPath();
+    ctx.arc(x, y, 26, 0, Math.PI * 2);
+    ctx.fill();
+
+    if (!scratchedPixelCheckPending) {
+      scratchedPixelCheckPending = true;
+      requestAnimationFrame(() => {
+        checkScratchProgress();
+        scratchedPixelCheckPending = false;
+      });
+    }
+  }
+
+  function checkScratchProgress() {
+    const { width, height } = canvasEl;
+    if (!width || !height) return;
+    const sampleStep = 6; // sample sparsely for performance
+    const data = ctx.getImageData(0, 0, width, height).data;
+    let cleared = 0, total = 0;
+    for (let y = 0; y < height; y += sampleStep) {
+      for (let x = 0; x < width; x += sampleStep) {
+        total++;
+        const alpha = data[(y * width + x) * 4 + 3];
+        if (alpha < 40) cleared++;
+      }
+    }
+    const ratio = cleared / total;
+    if (ratio > 0.62) {
+      completeScratch();
+    }
+  }
+
+  function completeScratch() {
+    if (scratchDone) return; // already completed
+    scratchDone = true;
+    canvasEl.style.transition = "opacity .5s ease";
+    canvasEl.style.opacity = "0";
+    canvasEl.style.pointerEvents = "none";
+
+    const rect = canvasEl.getBoundingClientRect();
+    window.Sparkles?.burst({
+      count: 70,
+      spread: "point",
+      originX: rect.left + rect.width / 2,
+      originY: rect.top + rect.height / 2,
+    });
+
+    scratched[activeYearIndex] = true;
+    saveProgress();
+
+    setTimeout(() => {
+      continueBtn.classList.add("show");
+    }, 500);
+  }
+
+  continueBtn.addEventListener("click", () => {
+    overlayEl.classList.remove("active");
+    const nextIndex = firstUnclearedIndex();
+    activeYearIndex = nextIndex;
+
+    if (nextIndex >= TOTAL) {
+      showFinale();
+      return;
+    }
+    renderNodes();
+    setTimeout(scrollToActiveNode, 60);
+  });
+
+  function showFinale() {
+    finaleEl.classList.add("active");
+    setTimeout(() => {
+      window.Sparkles?.burst({ count: 110, duration: 2200, spread: "full" });
+    }, 200);
+    try { localStorage.setItem("bday_phase", "puzzle"); } catch (e) {}
+  }
+
+  finaleContinueBtn.addEventListener("click", () => {
+    window.dispatchEvent(new CustomEvent("levelsComplete"));
+  });
+
+  const fireflyFieldEl = document.getElementById("levelsFireflies");
+  let sceneryStarted = false;
+
+  function spawnLevelFireflies(count = 16) {
+    if (!fireflyFieldEl) return;
+    fireflyFieldEl.innerHTML = "";
+    for (let i = 0; i < count; i++) {
+      const m = document.createElement("span");
+      m.className = "mote";
+      const size = 2 + Math.random() * 2.2;
+      m.style.width = size + "px";
+      m.style.height = size + "px";
+      m.style.left = Math.random() * 100 + "vw";
+      m.style.bottom = Math.random() * 40 + "vh";
+      m.style.setProperty("--mote-drift", (Math.random() * 40 - 20).toFixed(0) + "px");
+      m.style.animationDuration = 8 + Math.random() * 8 + "s";
+      m.style.animationDelay = Math.random() * 10 + "s";
+      fireflyFieldEl.appendChild(m);
+    }
+  }
+
+  function initLevelsPhase() {
+    if (!sceneryStarted) {
+      sceneryStarted = true;
+      spawnLevelFireflies(18);
+    }
+    activeYearIndex = firstUnclearedIndex();
+    if (activeYearIndex >= TOTAL) {
+      showFinale();
+      return;
+    }
+    renderNodes();
+    setTimeout(scrollToActiveNode, 80);
+  }
+
+  window.addEventListener("resize", drawPathLine);
+  window.addEventListener("enterLevels", initLevelsPhase);
+  window.__initLevelsPhase = initLevelsPhase;
+})();
+(function () {
+  const SIZE = 3; // 3x3 grid, 8 tiles + 1 blank
+  const BLANK = SIZE * SIZE - 1;
+
+  const boardEl     = document.getElementById("puzzleBoard");
+  const movesEl     = document.getElementById("puzzleMoves");
+  const shuffleBtn  = document.getElementById("puzzleShuffle");
+  const fireflyField = document.getElementById("puzzleFireflies");
+  const completeEl  = document.getElementById("puzzleComplete");
+  const completePhotoEl = document.getElementById("puzzleCompletePhoto");
+  const completeContinueBtn = document.getElementById("puzzleCompleteContinue");
+
+  // tiles[i] = which original position's image is currently sitting in cell i
+  let tiles = [];
+  let moves = 0;
+  let solved = false;
+  let started = false;
+
+  // puzzle image used for the tile pieces and completion view
+  const PUZZLE_IMAGE_URL = "koyel%20doyel/rounak%20birthday%20celebration.jpg";
+  const PLACEHOLDER_GRADIENT =
+    "linear-gradient(135deg, #6a3a6b 0%, #b0563f 55%, #e2874a 100%)";
+
+  function backgroundFor(originalIndex) {
+    const row = Math.floor(originalIndex / SIZE);
+    const col = originalIndex % SIZE;
+    const posX = (col / (SIZE - 1)) * 100;
+    const posY = (row / (SIZE - 1)) * 100;
+    if (PUZZLE_IMAGE_URL) {
+      return `background-image:url('${PUZZLE_IMAGE_URL}'); background-position:${posX}% ${posY}%;`;
+    }
+    return `background-image:${PLACEHOLDER_GRADIENT}; background-position:${posX}% ${posY}%; background-size:340% 340%;`;
+  }
+
+  function blankIndex() {
+    return tiles.indexOf(BLANK);
+  }
+
+  function neighborsOf(index) {
+    const row = Math.floor(index / SIZE);
+    const col = index % SIZE;
+    const result = [];
+    if (row > 0) result.push(index - SIZE);
+    if (row < SIZE - 1) result.push(index + SIZE);
+    if (col > 0) result.push(index - 1);
+    if (col < SIZE - 1) result.push(index + 1);
+    return result;
+  }
+
+  function canMove(cellIndex) {
+    return neighborsOf(cellIndex).includes(blankIndex());
+  }
+
+  function swapCells(a, b) {
+    const tmp = tiles[a];
+    tiles[a] = tiles[b];
+    tiles[b] = tmp;
+  }
+
+  function isSolved() {
+    return tiles.every((val, i) => val === i);
+  }
+
+  // Shuffle by performing random *legal* slides from the solved state.
+  // This guarantees the puzzle is always solvable, and a low move-count
+  // keeps it genuinely "3 to 4 steps" easy as requested.
+  function shuffle(stepCount = 5) {
+    tiles = Array.from({ length: SIZE * SIZE }, (_, i) => i);
+    let prevBlank = -1;
+    for (let s = 0; s < stepCount; s++) {
+      const bi = blankIndex();
+      const options = neighborsOf(bi).filter((n) => n !== prevBlank);
+      const pick = options[Math.floor(Math.random() * options.length)];
+      swapCells(bi, pick);
+      prevBlank = bi;
+    }
+    // guard against an accidental already-solved shuffle
+    if (isSolved()) shuffle(stepCount);
+  }
+
+  function render() {
+    boardEl.innerHTML = "";
+    tiles.forEach((originalIndex, cellIndex) => {
+      const tile = document.createElement("div");
+      if (originalIndex === BLANK) {
+        tile.className = "puzzle-tile blank";
+      } else {
+        tile.className = "puzzle-tile";
+        tile.style.cssText = backgroundFor(originalIndex);
+        if (canMove(cellIndex)) tile.classList.add("movable");
+        tile.addEventListener("click", () => attemptMove(cellIndex));
+      }
+      boardEl.appendChild(tile);
+    });
+  }
+
+  function attemptMove(cellIndex) {
+    if (solved || !canMove(cellIndex)) return;
+    swapCells(cellIndex, blankIndex());
+    moves += 1;
+    movesEl.textContent = moves;
+    render();
+
+    if (isSolved()) {
+      solved = true;
+      setTimeout(showComplete, 260);
+    }
+  }
+
+  function showComplete() {
+    completePhotoEl.style.cssText = PUZZLE_IMAGE_URL
+      ? `background-image:url('${PUZZLE_IMAGE_URL}');`
+      : `background-image:${PLACEHOLDER_GRADIENT};`;
+    completeEl.classList.add("active");
+
+    const rect = boardEl.getBoundingClientRect();
+    window.Sparkles?.burst({
+      count: 90,
+      duration: 1800,
+      spread: "point",
+      originX: rect.left + rect.width / 2,
+      originY: rect.top + rect.height / 2,
+    });
+
+    try { localStorage.setItem("bday_phase", "letter"); } catch (e) {}
+  }
+
+  function spawnFireflies(count) {
+    if (!fireflyField) return;
+    fireflyField.innerHTML = "";
+    for (let i = 0; i < count; i++) {
+      const f = document.createElement("span");
+      f.className = "firefly " + (Math.random() > 0.5 ? "gold" : "pink");
+      const size = 2 + Math.random() * 2.5;
+      f.style.width = size + "px";
+      f.style.height = size + "px";
+      f.style.left = Math.random() * 100 + "vw";
+      f.style.bottom = "-10px";
+      f.style.setProperty("--drift", (Math.random() * 50 - 25).toFixed(0) + "px");
+      f.style.animationDuration = 6 + Math.random() * 6 + "s";
+      f.style.animationDelay = Math.random() * 8 + "s";
+      fireflyField.appendChild(f);
+    }
+  }
+
+  shuffleBtn.addEventListener("click", () => {
+    moves = 0;
+    solved = false;
+    movesEl.textContent = moves;
+    completeEl.classList.remove("active");
+    shuffle(5);
+    render();
+  });
+
+  completeContinueBtn.addEventListener("click", () => {
+    window.dispatchEvent(new CustomEvent("puzzleComplete"));
+  });
+
+  function initPuzzlePhase() {
+    if (!started) {
+      started = true;
+      spawnFireflies(26);
+    }
+    moves = 0;
+    solved = false;
+    movesEl.textContent = moves;
+    completeEl.classList.remove("active");
+    shuffle(5);
+    render();
+  }
+
+  window.addEventListener("enterPuzzle", initPuzzlePhase);
+  window.__initPuzzlePhase = initPuzzlePhase;
+})();
+(function () {
+  const curtainEl     = document.getElementById("letterCurtain");
+  const curtainBtn    = document.getElementById("curtainOpenBtn");
+  const envelopeEl    = document.getElementById("envelope");
+  const tapHintEl     = document.getElementById("letterTapHint");
+  const letterCardEl  = document.getElementById("letterCard");
+  const fireflyField  = document.getElementById("letterFireflies");
+  const balloonField  = document.getElementById("balloonField");
+
+  let started = false;
+  let envelopeOpened = false;
+
+  // ---------------------------------------------------------------
+  // PLACEHOLDER LETTER TEXT
+  // Swap the innerHTML below with the real message once it's sent.
+  // Keep the .letter-placeholder-tag element out once real text is in.
+  // ---------------------------------------------------------------
+  const LETTER_HTML = `
+    <p class="salutation">My dearest,</p>
+    <p>As you step into adulthood, I pray that your path is filled with clarity, strength, and unwavering confidence. May you be blessed with the courage to chase your biggest dreams, the wisdom to make the right choices, and the resilience to overcome any obstacle.</p>
+    <p>I wish you immense success in your future career, true happiness in your daily life, and the peace of mind to enjoy every single moment of this new chapter. May your luck be high, your stress be low, and your bank account be consistently full.</p>
+    <p>You have a brilliant mind and a great future ahead of you.</p>
+    <p class="signoff">Happy 18th Birthday, and may all your finest wishes come true ✨😊💐</p>
+  `;
+
+  function spawnFireflies(count) {
+    if (!fireflyField) return;
+    fireflyField.innerHTML = "";
+    for (let i = 0; i < count; i++) {
+      const f = document.createElement("span");
+      f.className = "firefly " + (Math.random() > 0.5 ? "gold" : "pink");
+      const size = 2 + Math.random() * 2.5;
+      f.style.width = size + "px";
+      f.style.height = size + "px";
+      f.style.left = Math.random() * 100 + "vw";
+      f.style.bottom = "-10px";
+      f.style.setProperty("--drift", (Math.random() * 50 - 25).toFixed(0) + "px");
+      f.style.animationDuration = 6 + Math.random() * 6 + "s";
+      f.style.animationDelay = Math.random() * 8 + "s";
+      fireflyField.appendChild(f);
+    }
+  }
+
+  function spawnBalloons(count = 14) {
+    if (!balloonField) return;
+    const colors = [
+      ["#e0708a", "#c4506e"],
+      ["#f2c66a", "#d9a53f"],
+      ["#8f9fe0", "#6c7dc9"],
+      ["#7fcf9e", "#57ab7c"],
+    ];
+    for (let i = 0; i < count; i++) {
+      const b = document.createElement("span");
+      b.className = "balloon";
+      const [c1, c2] = colors[Math.floor(Math.random() * colors.length)];
+      b.style.background = `radial-gradient(circle at 35% 28%, ${c1}, ${c2})`;
+      b.style.left = Math.random() * 92 + "vw";
+      b.style.setProperty("--sway", (Math.random() * 60 - 30).toFixed(0) + "px");
+      b.style.setProperty("--tilt", (Math.random() * 16 - 8).toFixed(0) + "deg");
+      b.style.animationDuration = 7 + Math.random() * 5 + "s";
+      b.style.animationDelay = Math.random() * 2.5 + "s";
+      balloonField.appendChild(b);
+      setTimeout(() => b.remove(), 14000);
+    }
+  }
+
+  function openCurtain() {
+    curtainEl.classList.add("opening");
+    setTimeout(() => curtainEl.classList.add("hidden"), 750);
+    window.Sparkles?.burst({ count: 60, duration: 1400, spread: "full" });
+  }
+
+  function openEnvelope() {
+    if (envelopeOpened) return;
+    envelopeOpened = true;
+    envelopeEl.classList.add("open");
+    tapHintEl.classList.add("hide");
+
+    const rect = envelopeEl.getBoundingClientRect();
+    window.Sparkles?.burst({
+      count: 70,
+      duration: 1600,
+      spread: "point",
+      originX: rect.left + rect.width / 2,
+      originY: rect.top,
+    });
+
+    setTimeout(() => {
+      letterCardEl.innerHTML = `<div class="letter-card-inner">${LETTER_HTML}</div>`;
+      letterCardEl.classList.add("show");
+      spawnBalloons(16);
+      try { localStorage.setItem("bday_phase", "done"); } catch (e) {}
+    }, 500);
+  }
+
+  curtainBtn.addEventListener("click", openCurtain);
+  envelopeEl.addEventListener("click", openEnvelope);
+
+  function initLetterPhase() {
+    if (!started) {
+      started = true;
+      spawnFireflies(24);
+    }
+    curtainEl.classList.remove("opening", "hidden");
+    envelopeEl.classList.remove("open");
+    envelopeOpened = false;
+    tapHintEl.classList.remove("hide");
+    letterCardEl.classList.remove("show");
+    letterCardEl.innerHTML = "";
+  }
+
+  window.addEventListener("enterLetter", initLetterPhase);
+  window.__initLetterPhase = initLetterPhase;
+})();
+(function () {
+  function goTo(phaseId) {
+    document.querySelectorAll(".phase").forEach((el) => el.classList.remove("active"));
+    const next = document.getElementById(phaseId);
+    if (next) next.classList.add("active");
+  }
+
+  window.addEventListener("loginSuccess", () => {
+    goTo("phase-loading");
+    window.dispatchEvent(new CustomEvent("enterLoading"));
+  });
+
+  window.addEventListener("loadingComplete", () => {
+    goTo("phase-levels");
+    window.dispatchEvent(new CustomEvent("enterLevels"));
+  });
+
+  window.addEventListener("levelsComplete", () => {
+    goTo("phase-puzzle");
+    window.dispatchEvent(new CustomEvent("enterPuzzle"));
+  });
+
+  window.addEventListener("puzzleComplete", () => {
+    goTo("phase-letter");
+    window.dispatchEvent(new CustomEvent("enterLetter"));
+  });
+
+  function resumeFromProgress() {
+    try {
+      const storedPhase = localStorage.getItem("bday_phase");
+      if (storedPhase === "loading") {
+        goTo("phase-loading");
+        window.dispatchEvent(new CustomEvent("enterLoading"));
+      } else if (storedPhase === "levels") {
+        goTo("phase-levels");
+        window.dispatchEvent(new CustomEvent("enterLevels"));
+      } else if (storedPhase === "puzzle") {
+        goTo("phase-puzzle");
+        window.dispatchEvent(new CustomEvent("enterPuzzle"));
+      } else if (storedPhase === "letter" || storedPhase === "done") {
+        goTo("phase-letter");
+        window.dispatchEvent(new CustomEvent("enterLetter"));
+      } else {
+        goTo("phase-login");
+      }
+    } catch (e) {
+      goTo("phase-login");
+    }
+  }
+
+  window.addEventListener("load", resumeFromProgress);
+})();
+
+</script>
+</body>
+</html>
